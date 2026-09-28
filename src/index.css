@@ -1,0 +1,459 @@
+/* Campus Spot Design System */
+@import 'leaflet/dist/leaflet.css';
+
+:root {
+  --color-primary: #cf0011;
+  --color-primary-dark: #b2000f;
+  --color-primary-light: #ea1a2b;
+  --color-primary-soft: rgba(207, 0, 17, 0.06);
+  --color-primary-border: rgba(207, 0, 17, 0.18);
+  
+  --color-success: #10b981;
+  --color-success-dark: #059669;
+  --color-success-soft: #ecfdf5;
+  --color-success-border: #a7f3d0;
+
+  --color-bg: #ffffff;
+  --color-surface: #f9fafb;
+  --color-surface-hover: #f3f4f6;
+  --color-border: #e5e7eb;
+  --color-border-light: #f1f3f5;
+
+  --color-text-main: #111827;
+  --color-text-muted: #6b7280;
+  --color-text-light: #9ca3af;
+  --color-text-white: #ffffff;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 28px rgba(0, 0, 0, 0.12);
+  --shadow-card: 0 4px 18px rgba(0, 0, 0, 0.07);
+  --shadow-float: 0 8px 30px rgba(0, 0, 0, 0.16);
+
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 26px;
+  --radius-full: 9999px;
+
+  --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --transition-fast: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  font-family: var(--font-family);
+  background-color: #ffffff;
+  color: var(--color-text-main);
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  outline: none;
+  user-select: none;
+  transition: transform var(--transition-fast), background var(--transition-fast), opacity var(--transition-fast);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+input, select {
+  font-family: inherit;
+  outline: none;
+}
+
+/* Scrollbar customization */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* ===================================================
+   RESPONSIVE LAYOUT CLASSES & MEDIA QUERIES
+   =================================================== */
+
+.app-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+/* App Header */
+.app-header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #f1f3f5;
+  padding: 10px 16px;
+  position: relative;
+  z-index: 35;
+  width: 100%;
+}
+
+.header-inner {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@media (min-width: 768px) {
+  .app-header {
+    padding: 14px 28px;
+  }
+}
+
+/* Main Content Area */
+.app-main {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 100%;
+}
+
+/* Summary View Container & Grid */
+.summary-container {
+  flex: 1;
+  height: 100%;
+  overflow-y: auto;
+  background-color: #fbfcfd;
+  padding: 20px 16px 28px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.summary-inner {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.summary-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 700px) {
+  .summary-container {
+    padding: 28px 32px;
+  }
+  .summary-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (min-width: 1060px) {
+  .summary-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+}
+
+/* Floating Card over Map */
+.floating-spot-card {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  z-index: 30;
+}
+
+@media (min-width: 768px) {
+  .floating-spot-card {
+    bottom: 24px;
+    left: 24px;
+    right: auto;
+    width: 390px;
+  }
+}
+
+/* Bottom Nav Container */
+.bottom-nav-container {
+  background-color: #ffffff;
+  border-top: 1px solid #f0f1f3;
+  padding: 8px 16px 10px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  user-select: none;
+  z-index: 35;
+  width: 100%;
+}
+
+.bottom-nav-inner {
+  display: flex;
+  width: 100%;
+  max-width: 360px;
+  justify-content: space-around;
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  .bottom-nav-container {
+    padding: 10px 24px;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.04);
+  }
+  .bottom-nav-inner {
+    max-width: 440px;
+  }
+  .ios-home-indicator {
+    display: none !important;
+  }
+}
+
+/* Reservation Modal / Bottom Sheet Responsive */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+@media (min-width: 640px) {
+  .modal-overlay {
+    align-items: center;
+    padding: 20px;
+  }
+}
+
+.modal-sheet-container {
+  position: relative;
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  background-color: #ffffff;
+  border-radius: 26px 26px 0 0;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.2);
+  padding: 14px 20px 24px 20px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .modal-sheet-container {
+    max-width: 450px;
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  }
+}
+
+/* ===================================================
+   LEAFLET CUSTOM MARKERS & CALLOUTS
+   =================================================== */
+
+.cs-marker-container {
+  background: transparent;
+  border: none;
+}
+
+/* Unselected Parking Spot Marker */
+.cs-map-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #ffffff;
+  padding: 6px 11px;
+  border-radius: var(--radius-full);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.16);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  font-weight: 700;
+  font-size: 13px;
+  color: #111827;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  white-space: nowrap;
+}
+
+.cs-map-pill:hover {
+  transform: translateY(-2px) scale(1.06);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+}
+
+.cs-map-pill svg {
+  color: var(--color-primary);
+  width: 14px;
+  height: 14px;
+}
+
+/* Selected Active Pin (Red Callout Pin with Car and Underneath Label) */
+.cs-active-pin-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cs-active-pin-wrapper:hover {
+  transform: translateY(-3px) scale(1.05);
+}
+
+.cs-active-pin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-primary);
+  color: #ffffff;
+  padding: 7px 13px;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(207, 0, 17, 0.45);
+  font-weight: 800;
+  font-size: 14px;
+  position: relative;
+}
+
+.cs-active-pin-badge::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--color-primary);
+}
+
+.cs-active-pin-label {
+  margin-top: 10px;
+  background: #ffffff;
+  color: #111827;
+  font-weight: 700;
+  font-size: 11.5px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+}
+
+/* Pulsing radar effect on active pin */
+.cs-pin-pulse {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(207, 0, 17, 0.25);
+  animation: cs-pulse 2s infinite ease-out;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes cs-pulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0.5;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-pop-in {
+  animation: popIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Hide default leaflet attribution styling overflow */
+.leaflet-control-attribution {
+  font-size: 9px !important;
+  background: rgba(255, 255, 255, 0.7) !important;
+  opacity: 0.6;
+}
+.leaflet-control-zoom {
+  display: none !important;
+}
