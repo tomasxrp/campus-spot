@@ -101,6 +101,16 @@ export const ParkingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
   }, []);
 
+  // Update selected spot when user switches campus
+  useEffect(() => {
+    if (spots.length > 0) {
+      const spotInCampus = spots.find((s) => s.campusId === selectedCampus.id);
+      if (spotInCampus) {
+        setSelectedSpot(spotInCampus);
+      }
+    }
+  }, [selectedCampus, spots]);
+
   const totalAvailableInCampus = useMemo(() => {
     return spots
       .filter((s) => s.campusId === selectedCampus.id)

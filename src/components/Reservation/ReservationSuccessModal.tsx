@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, QrCode, MapPin, Clock, Car, Navigation } from 'lucide-react';
+import { CheckCircle2, MapPin, Car, Navigation, ShieldCheck, Calendar } from 'lucide-react';
 import { useParking } from '../../context/ParkingContext';
 
 export const ReservationSuccessModal: React.FC = () => {
@@ -36,28 +36,27 @@ export const ReservationSuccessModal: React.FC = () => {
         }}
       />
 
-      {/* Ticket Card */}
+      {/* Summary Card */}
       <div
         className="animate-pop-in"
         style={{
           position: 'relative',
           width: '100%',
-          maxWidth: '380px',
+          maxWidth: '400px',
           backgroundColor: '#ffffff',
           borderRadius: '24px',
-          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.25)',
-          padding: '24px 20px',
+          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.25)',
+          padding: '26px 22px',
           zIndex: 80,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          textAlign: 'center',
         }}
       >
         {/* Animated Green Check Icon */}
         <div style={{
-          width: '56px',
-          height: '56px',
+          width: '58px',
+          height: '58px',
           borderRadius: '50%',
           backgroundColor: '#ecfdf5',
           border: '4px solid #d1fae5',
@@ -67,7 +66,7 @@ export const ReservationSuccessModal: React.FC = () => {
           color: '#10b981',
           marginBottom: '12px',
         }}>
-          <CheckCircle2 size={32} strokeWidth={2.4} />
+          <CheckCircle2 size={34} strokeWidth={2.4} />
         </div>
 
         <span style={{
@@ -81,72 +80,113 @@ export const ReservationSuccessModal: React.FC = () => {
         </span>
 
         <h3 style={{
-          fontSize: '20px',
+          fontSize: '21px',
           fontWeight: '800',
           color: '#111827',
-          marginTop: '2px',
+          marginTop: '4px',
           marginBottom: '2px',
+          textAlign: 'center',
         }}>
           {lastReservation.spotName}
         </h3>
 
-        <p style={{ fontSize: '12.5px', color: '#6b7280', marginBottom: '16px' }}>
-          Código de acceso: <strong style={{ color: '#cf0011' }}>{lastReservation.code}</strong>
-        </p>
+        {/* Code Badge */}
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          backgroundColor: '#fff4f4',
+          border: '1px solid rgba(207, 0, 17, 0.2)',
+          padding: '4px 14px',
+          borderRadius: '99px',
+          marginTop: '6px',
+          marginBottom: '16px',
+        }}>
+          <span style={{ fontSize: '11.5px', color: '#6b7280', fontWeight: '500' }}>Código:</span>
+          <strong style={{ fontSize: '14px', color: '#cf0011', letterSpacing: '0.5px' }}>{lastReservation.code}</strong>
+        </div>
 
-        {/* Access Pass Box with QR Code Simulation */}
+        {/* Detailed Breakdown Card */}
         <div style={{
           width: '100%',
           backgroundColor: '#f9fafb',
-          border: '1px dashed #d1d5db',
+          border: '1px solid #e5e7eb',
           borderRadius: '16px',
-          padding: '14px',
+          padding: '14px 16px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '10px',
-          marginBottom: '16px',
+          gap: '12px',
+          marginBottom: '18px',
         }}>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <div style={{
-              backgroundColor: '#ffffff',
-              padding: '10px',
-              borderRadius: '12px',
-              border: '1px solid #e5e7eb',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
-            }}>
-              <QrCode size={90} color="#111827" />
-            </div>
-          </div>
-
           <div style={{
             fontSize: '11px',
-            color: '#6b7280',
-            fontWeight: '500',
+            fontWeight: '700',
+            color: '#9ca3af',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            borderBottom: '1px solid #f1f3f5',
+            paddingBottom: '6px',
           }}>
-            Acerca este código al lector del sensor en la barrera de entrada.
+            Resumen de la Reserva
           </div>
 
+          {/* Ubicación */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+            <div style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+              <MapPin size={15} color="#cf0011" />
+            </div>
+            <div>
+              <div style={{ fontSize: '11px', color: '#6b7280' }}>Lugar y Acceso</div>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: '#111827' }}>
+                {lastReservation.spotName} · {lastReservation.accessPoint}
+              </div>
+            </div>
+          </div>
+
+          {/* Fecha y Horario */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+            <div style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+              <Calendar size={15} color="#cf0011" />
+            </div>
+            <div>
+              <div style={{ fontSize: '11px', color: '#6b7280' }}>Fecha y Horario</div>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: '#111827' }}>
+                {lastReservation.date} a las {lastReservation.arrivalTime} hrs
+              </div>
+              <div style={{ fontSize: '11.5px', color: '#6b7280' }}>
+                Duración: {lastReservation.duration}
+              </div>
+            </div>
+          </div>
+
+          {/* Vehículo */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+            <div style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+              <Car size={15} color="#cf0011" />
+            </div>
+            <div>
+              <div style={{ fontSize: '11px', color: '#6b7280' }}>Vehículo Registrado</div>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: '#111827' }}>
+                {lastReservation.vehicleModel} <span style={{ color: '#cf0011' }}>({lastReservation.vehiclePlate})</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Aviso de tolerancia */}
           <div style={{
-            borderTop: '1px solid #e5e7eb',
-            paddingTop: '10px',
             display: 'flex',
-            flexDirection: 'column',
+            alignItems: 'center',
             gap: '6px',
-            textAlign: 'left',
-            fontSize: '12px',
+            backgroundColor: '#f0fdf4',
+            border: '1px solid #bbf7d0',
+            borderRadius: '10px',
+            padding: '8px 10px',
+            fontSize: '11.5px',
+            color: '#166534',
+            marginTop: '2px',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#374151' }}>
-              <MapPin size={14} color="#cf0011" />
-              <span>{lastReservation.accessPoint}</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#374151' }}>
-              <Clock size={14} color="#cf0011" />
-              <span>{lastReservation.date} · {lastReservation.arrivalTime} ({lastReservation.duration})</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#374151' }}>
-              <Car size={14} color="#cf0011" />
-              <span>{lastReservation.vehicleModel} ({lastReservation.vehiclePlate})</span>
-            </div>
+            <ShieldCheck size={15} color="#16a34a" style={{ flexShrink: 0 }} />
+            <span>Lugar reservado con 15 minutos de tolerancia tras la llegada.</span>
           </div>
         </div>
 
@@ -161,15 +201,22 @@ export const ReservationSuccessModal: React.FC = () => {
               width: '100%',
               backgroundColor: '#cf0011',
               color: '#ffffff',
-              padding: '12px',
-              borderRadius: '12px',
-              fontSize: '14px',
+              padding: '13px',
+              borderRadius: '13px',
+              fontSize: '14.5px',
               fontWeight: '700',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '6px',
-              boxShadow: '0 4px 12px rgba(207, 0, 17, 0.3)',
+              gap: '7px',
+              boxShadow: '0 4px 14px rgba(207, 0, 17, 0.3)',
+              transition: 'background-color 0.15s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#b2000f';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#cf0011';
             }}
           >
             <Navigation size={16} />
@@ -180,13 +227,13 @@ export const ReservationSuccessModal: React.FC = () => {
             onClick={closeSuccessModal}
             style={{
               width: '100%',
-              padding: '8px',
-              fontSize: '13px',
+              padding: '9px',
+              fontSize: '13.5px',
               fontWeight: '600',
               color: '#6b7280',
             }}
           >
-            Cerrar
+            Entendido
           </button>
         </div>
       </div>
