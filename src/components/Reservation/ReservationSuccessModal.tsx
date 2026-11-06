@@ -172,6 +172,29 @@ export const ReservationSuccessModal: React.FC = () => {
             </div>
           </div>
 
+          {/* Información específica de CTA IoT si aplica */}
+          {lastReservation.sensorId && (
+            <div style={{
+              backgroundColor: '#fffbeb',
+              border: '1.5px solid #fde68a',
+              borderRadius: '12px',
+              padding: '10px 12px',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '8px',
+            }}>
+              <span style={{ fontSize: '16px', lineHeight: '1.2' }}>🟡</span>
+              <div>
+                <div style={{ fontSize: '12px', fontWeight: '800', color: '#92400e' }}>
+                  Plaza {lastReservation.slotNumber ? `#${lastReservation.slotNumber}` : ''} ({lastReservation.sensorId})
+                </div>
+                <div style={{ fontSize: '11px', color: '#78350f', marginTop: '2px' }}>
+                  LED Amarillo activado en Firebase RTDB. Patente esperada registrada: <strong>{lastReservation.vehiclePlate}</strong>.
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Aviso de tolerancia */}
           <div style={{
             display: 'flex',

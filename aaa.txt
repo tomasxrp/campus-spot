@@ -1,0 +1,6 @@
+MIra, tal como esta ahora hay que cambiar  cosas. En el formulario 
+de reserva hay que poner Tipo reserva(Tesis, Visitas,profesor, funcionario, 
+estudiante) y una descripcion. Si es estudiante, tesista debe pedir la matricula 
+y los demas rut. Recuerda que esto no va a firebase, sino que a lo que se guarda 
+localmente. Ademas al reservar el color no se pone en amarillo, y en la plaza, 
+donde se elige deberia ponerse un contador con los 20 min

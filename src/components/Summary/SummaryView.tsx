@@ -4,13 +4,7 @@ import { useParking } from '../../context/ParkingContext';
 import { ParkingCard } from './ParkingCard';
 
 export const SummaryView: React.FC = () => {
-  const { selectedCampus, filteredSpots, setFilterModalOpen } = useParking();
-
-  // Primary 3 featured spots matching the screenshot (Minas, Casino, Biblioteca Central)
-  // 32 + 18 + 41 = 91 plazas libres!
-  const featuredAvailableSum = filteredSpots
-    .slice(0, 3)
-    .reduce((acc, s) => acc + s.availableSpots, 0);
+  const { selectedCampus, filteredSpots, setFilterModalOpen, totalAvailableInCampus } = useParking();
 
   return (
     <div className="summary-container">
@@ -76,7 +70,7 @@ export const SummaryView: React.FC = () => {
             color: '#6b7280',
             margin: 0,
           }}>
-            {featuredAvailableSum} plazas libres en {selectedCampus.name}
+            {totalAvailableInCampus} plazas libres en {selectedCampus.name}
           </p>
         </div>
 

@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useParking } from '../../context/ParkingContext';
 import { DURATION_OPTIONS, VEHICLE_PRESETS } from '../../services/mockData';
+import { CtaReservationView } from './CtaReservationView';
 
 export const ReservationModal: React.FC = () => {
   const { 
@@ -34,6 +35,26 @@ export const ReservationModal: React.FC = () => {
   const [showVehiclePicker, setShowVehiclePicker] = useState(false);
 
   if (!reservationModalOpen || !targetReservationSpot) return null;
+
+  // Interfaz de reserva dedicada exclusivamente para el CTA conectada a Firebase
+  if (targetReservationSpot.id === 'est-cta') {
+    return (
+      <div className="modal-overlay">
+        <div
+          onClick={closeReservationModal}
+          className="animate-fade-in"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.55)',
+            backdropFilter: 'blur(4px)',
+            WebkitBackdropFilter: 'blur(4px)',
+          }}
+        />
+        <CtaReservationView spot={targetReservationSpot} onClose={closeReservationModal} />
+      </div>
+    );
+  }
 
   const dateOptions = ['Hoy, 28 sep', 'Mañana, 29 sep', 'Miércoles, 30 sep'];
   const timeOptions = ['12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '16:00'];
@@ -117,6 +138,38 @@ export const ReservationModal: React.FC = () => {
             }}>
               {targetReservationSpot.sector} · {targetReservationSpot.accessPoint}
             </p>
+
+            {targetReservationSpot.sensors && targetReservationSpot.sensors.length > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '6px' }}>
+                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '500' }}>Plazas / Sensores:</span>
+                {targetReservationSpot.sensors.map((s) => (
+                  <span
+                    key={s.sensorId}
+                    title={`${s.name} (${s.sensorId}): ${s.isOccupied ? 'Ocupado (LED Rojo)' : 'Libre (LED Verde)'}`}
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: '700',
+                      padding: '2px 6px',
+                      borderRadius: '5px',
+                      backgroundColor: s.ledColor === 'verde' ? '#dcfce7' : '#fee2e2',
+                      color: s.ledColor === 'verde' ? '#166534' : '#991b1b',
+                      border: `1px solid ${s.ledColor === 'verde' ? '#bbf7d0' : '#fecaca'}`,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '3px',
+                    }}
+                  >
+                    <span style={{
+                      width: '5px',
+                      height: '5px',
+                      borderRadius: '50%',
+                      backgroundColor: s.ledColor === 'verde' ? '#22c55e' : '#ef4444',
+                    }} />
+                    P{s.slotNumber}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Close Button (X) */}

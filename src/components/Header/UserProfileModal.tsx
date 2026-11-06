@@ -6,7 +6,8 @@ import {
   Trash2, 
   Play, 
   Pause, 
-  Zap 
+  Zap,
+  Terminal
 } from 'lucide-react';
 import { useParking } from '../../context/ParkingContext';
 
@@ -20,6 +21,7 @@ export const UserProfileModal: React.FC = () => {
     toggleArduinoSimulation,
     triggerManualArduinoPing,
     lastArduinoEvent,
+    openDbConsole,
   } = useParking();
 
   if (!userProfileOpen) return null;
@@ -242,6 +244,33 @@ export const UserProfileModal: React.FC = () => {
               <span>{arduinoSimulationActive ? 'Detener Tráfico' : 'Simular Tráfico'}</span>
             </button>
           </div>
+
+          {/* Firebase Live Database Console Shortcut */}
+          <button
+            onClick={() => {
+              setUserProfileOpen(false);
+              openDbConsole();
+            }}
+            style={{
+              width: '100%',
+              padding: '10px 14px',
+              borderRadius: '10px',
+              backgroundColor: '#0284c7',
+              color: '#ffffff',
+              fontSize: '12px',
+              fontWeight: '700',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '7px',
+              boxShadow: '0 2px 8px rgba(2, 132, 199, 0.3)',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            <Terminal size={14} />
+            <span>Abrir Consola de Datos en Vivo (Firebase)</span>
+          </button>
 
           {/* Last Arduino Sensor Event Feed */}
           {lastArduinoEvent && (

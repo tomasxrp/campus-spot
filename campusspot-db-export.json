@@ -1,0 +1,74 @@
+{
+  "leds": {
+    "sensor1": {
+      "amarillo": false
+    },
+    "sensor2": {
+      "amarillo": false
+    },
+    "sensor3": {
+      "amarillo": false
+    },
+    "sensor4": {
+      "amarillo": false
+    }
+  },
+  "sensores": {
+    "sensor1": {
+      "camara_validada": false,
+      "distancia_mm": 97.9265,
+      "distancia_valida": true,
+      "estado_final": "ocupado",
+      "led_amarillo": false,
+      "led_rojo": true,
+      "led_verde": false,
+      "objeto_detectado": true,
+      "ocupacion_confirmada": true,
+      "timestamp_camara": 1793209612,
+      "timestamp_sensor": 1793209324,
+      "validacion_vigente": true
+    },
+    "sensor2": {
+      "camara_validada": false,
+      "distancia_mm": 114.0475,
+      "distancia_valida": true,
+      "estado_final": "ocupado",
+      "led_amarillo": false,
+      "led_rojo": true,
+      "led_verde": false,
+      "objeto_detectado": true,
+      "ocupacion_confirmada": true,
+      "timestamp_camara": 1793209612,
+      "timestamp_sensor": 1793209324,
+      "validacion_vigente": true
+    },
+    "sensor3": {
+      "camara_validada": false,
+      "distancia_mm": 128.968,
+      "distancia_valida": true,
+      "estado_final": "ocupado",
+      "led_amarillo": false,
+      "led_rojo": true,
+      "led_verde": false,
+      "objeto_detectado": true,
+      "ocupacion_confirmada": true,
+      "timestamp_camara": 1793209612,
+      "timestamp_sensor": 1793209324,
+      "validacion_vigente": true
+    },
+    "sensor4": {
+      "camara_validada": false,
+      "distancia_mm": 803.992,
+      "distancia_valida": true,
+      "estado_final": "libre",
+      "led_amarillo": false,
+      "led_rojo": false,
+      "led_verde": true,
+      "objeto_detectado": false,
+      "ocupacion_confirmada": false,
+      "timestamp_camara": 1793209612,
+      "timestamp_sensor": 1793209324,
+      "validacion_vigente": false
+    }
+  }
+}

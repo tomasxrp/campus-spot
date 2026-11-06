@@ -8,6 +8,7 @@ import { ReservationModal } from './components/Reservation/ReservationModal';
 import { ReservationSuccessModal } from './components/Reservation/ReservationSuccessModal';
 import { FilterModal } from './components/Summary/FilterModal';
 import { UserProfileModal } from './components/Header/UserProfileModal';
+import { DatabaseConsoleModal } from './components/Console/DatabaseConsoleModal';
 
 const AppContent: React.FC = () => {
   const { activeTab } = useParking();
@@ -30,6 +31,7 @@ const AppContent: React.FC = () => {
       <ReservationSuccessModal />
       <FilterModal />
       <UserProfileModal />
+      <DatabaseConsoleModal />
     </div>
   );
 };

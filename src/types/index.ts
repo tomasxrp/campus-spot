@@ -1,5 +1,24 @@
 export type ParkingType = 'Cubierto' | 'Exterior';
 
+export interface ParkingSensorSlot {
+  sensorId: string;
+  name: string;
+  slotNumber: number;
+  isOccupied: boolean;
+  ledColor: 'verde' | 'rojo' | 'amarillo';
+  distanciaMm?: number;
+  distanciaValida?: boolean;
+  objetoDetectado?: boolean;
+  ocupacionConfirmada?: boolean;
+  patenteEsperada?: string;
+  patenteDetectada?: string;
+  camaraValidada?: boolean;
+  validacionVigente?: boolean;
+  timestamp?: number;
+  reservaTimestamp?: number;
+  reservaExpira?: number;
+}
+
 export interface ParkingSpot {
   id: string;
   name: string;
@@ -15,6 +34,8 @@ export interface ParkingSpot {
   coordinates: [number, number]; // [lat, lng]
   image: string;
   isFull?: boolean;
+  sensors?: ParkingSensorSlot[];
+  isFirebaseConnected?: boolean;
 }
 
 export interface Campus {
@@ -44,6 +65,8 @@ export interface Reservation {
   status: 'active' | 'completed' | 'cancelled';
   createdAt: string;
   expiresAt: string;
+  sensorId?: string;
+  slotNumber?: number;
 }
 
 export interface NewReservationPayload {
@@ -53,6 +76,8 @@ export interface NewReservationPayload {
   duration: string;
   vehiclePlate: string;
   vehicleModel: string;
+  sensorId?: string;
+  slotNumber?: number;
 }
 
 export interface FilterOptions {

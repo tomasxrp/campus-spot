@@ -1,9 +1,17 @@
 import React, { useState } from 'react';
-import { ChevronDown, User, Check, Building2 } from 'lucide-react';
+import { ChevronDown, User, Check, Building2, Terminal } from 'lucide-react';
 import { useParking } from '../../context/ParkingContext';
 
 export const Header: React.FC = () => {
-  const { selectedCampus, setSelectedCampus, campuses, setUserProfileOpen, activeReservations } = useParking();
+  const { 
+    selectedCampus, 
+    setSelectedCampus, 
+    campuses, 
+    setUserProfileOpen, 
+    activeReservations,
+    openDbConsole,
+    firebaseStatus
+  } = useParking();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
@@ -146,38 +154,78 @@ export const Header: React.FC = () => {
         )}
       </div>
 
-      {/* User Profile Button */}
-      <button
-        onClick={() => setUserProfileOpen(true)}
-        aria-label="Perfil de usuario"
-        style={{
-          width: '36px',
-          height: '36px',
-          borderRadius: '50%',
-          backgroundColor: '#ffffff',
-          border: '1px solid #f0f0f0',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-          position: 'relative',
-        }}
-      >
-        <User size={18} color="#cf0011" strokeWidth={1.8} />
-        {/* Active reservation badge indicator */}
-        {activeReservations.length > 0 && (
+      {/* Right Actions: Firebase DB Console + User Profile */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <button
+          onClick={openDbConsole}
+          aria-label="Abrir Consola de Base de Datos"
+          title="Consola de Firebase Realtime Database"
+          style={{
+            height: '36px',
+            padding: '0 10px',
+            borderRadius: '12px',
+            backgroundColor: '#0f172a',
+            color: '#f8fafc',
+            border: '1px solid #1e293b',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '11.5px',
+            fontWeight: '700',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+            transition: 'transform 0.15s ease, background-color 0.15s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#1e293b';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#0f172a';
+          }}
+        >
+          <Terminal size={15} color="#38bdf8" />
           <span style={{
-            position: 'absolute',
-            top: '-1px',
-            right: '-1px',
-            width: '10px',
-            height: '10px',
-            backgroundColor: '#cf0011',
-            border: '2px solid #ffffff',
+            width: '6px',
+            height: '6px',
             borderRadius: '50%',
+            backgroundColor: firebaseStatus === 'connected' ? '#22c55e' : firebaseStatus === 'connecting' ? '#eab308' : '#ef4444',
+            boxShadow: firebaseStatus === 'connected' ? '0 0 6px #22c55e' : 'none',
           }} />
-        )}
-      </button>
+          <span>BD</span>
+        </button>
+
+        {/* User Profile Button */}
+        <button
+          onClick={() => setUserProfileOpen(true)}
+          aria-label="Perfil de usuario"
+          style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            backgroundColor: '#ffffff',
+            border: '1px solid #f0f0f0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+            position: 'relative',
+          }}
+        >
+          <User size={18} color="#cf0011" strokeWidth={1.8} />
+          {/* Active reservation badge indicator */}
+          {activeReservations.length > 0 && (
+            <span style={{
+              position: 'absolute',
+              top: '-1px',
+              right: '-1px',
+              width: '10px',
+              height: '10px',
+              backgroundColor: '#cf0011',
+              border: '2px solid #ffffff',
+              borderRadius: '50%',
+            }} />
+          )}
+        </button>
+      </div>
       </div>
     </header>
   );

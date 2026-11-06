@@ -7,7 +7,7 @@ interface ParkingCardProps {
 }
 
 export const ParkingCard: React.FC<ParkingCardProps> = ({ spot }) => {
-  const { openReservationModal, setSelectedSpot } = useParking();
+  const { openReservationModal, setSelectedSpot, openDbConsole } = useParking();
 
   // Determine metadata text to match mockup:
   // e.g. "2 min · Cubierto", "4 min · Exterior", "3 min · 4 accesibles"
@@ -73,18 +73,43 @@ export const ParkingCard: React.FC<ParkingCardProps> = ({ spot }) => {
       {/* Info Column */}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
         {/* Title */}
-        <h4 style={{
-          fontSize: '14.5px',
-          fontWeight: '700',
-          color: '#111827',
-          letterSpacing: '-0.2px',
-          margin: 0,
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}>
-          {spot.name}
-        </h4>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <h4 style={{
+            fontSize: '14.5px',
+            fontWeight: '700',
+            color: '#111827',
+            letterSpacing: '-0.2px',
+            margin: 0,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}>
+            {spot.name}
+          </h4>
+
+          {spot.isFirebaseConnected && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                openDbConsole();
+              }}
+              title="Abrir consola de base de datos Firebase"
+              style={{
+                fontSize: '9.5px',
+                fontWeight: '700',
+                color: '#ea580c',
+                backgroundColor: '#fff7ed',
+                border: '1px solid #ffedd5',
+                padding: '2px 6px',
+                borderRadius: '5px',
+                whiteSpace: 'nowrap',
+                cursor: 'pointer',
+              }}
+            >
+              Firebase RTDB
+            </button>
+          )}
+        </div>
 
         {/* Subtitle / Sector */}
         <p style={{

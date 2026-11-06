@@ -10,6 +10,7 @@ import type {
 } from '../types';
 import { parkingService } from '../services/parkingService';
 import { CAMPUS_LIST } from '../services/mockData';
+import { subscribeToFirebaseStatus, type FirebaseConnectionStatus } from '../services/firebase';
 
 interface ParkingContextType {
   campuses: Campus[];
@@ -43,6 +44,11 @@ interface ParkingContextType {
   toggleArduinoSimulation: () => void;
   triggerManualArduinoPing: () => void;
   lastArduinoEvent: ArduinoSensorEvent | null;
+  dbConsoleOpen: boolean;
+  setDbConsoleOpen: (open: boolean) => void;
+  openDbConsole: () => void;
+  closeDbConsole: () => void;
+  firebaseStatus: FirebaseConnectionStatus;
 }
 
 const ParkingContext = createContext<ParkingContextType | undefined>(undefined);
@@ -61,6 +67,17 @@ export const ParkingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [lastReservation, setLastReservation] = useState<Reservation | null>(null);
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [userProfileOpen, setUserProfileOpen] = useState(false);
+  const [dbConsoleOpen, setDbConsoleOpen] = useState(false);
+  const [firebaseStatus, setFirebaseStatus] = useState<FirebaseConnectionStatus>('connecting');
+
+  const openDbConsole = () => setDbConsoleOpen(true);
+  const closeDbConsole = () => setDbConsoleOpen(false);
+
+  // Suscripción al estado de conexión de Firebase
+  useEffect(() => {
+    const unsubStatus = subscribeToFirebaseStatus(setFirebaseStatus);
+    return () => unsubStatus();
+  }, []);
 
   // Reservas activas
   const [activeReservations, setActiveReservations] = useState<Reservation[]>([]);
@@ -214,6 +231,11 @@ export const ParkingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         toggleArduinoSimulation,
         triggerManualArduinoPing,
         lastArduinoEvent,
+        dbConsoleOpen,
+        setDbConsoleOpen,
+        openDbConsole,
+        closeDbConsole,
+        firebaseStatus,
       }}
     >
       {children}
