@@ -162,11 +162,12 @@ export const FloatingSpotCard: React.FC<FloatingSpotCardProps> = ({ spot }) => {
           </span>
           <div style={{ display: 'flex', gap: '6px' }}>
             {spot.sensors.map((s) => {
-              const bg = s.ledColor === 'verde' ? '#dcfce7' : s.ledColor === 'amarillo' ? '#fef9c3' : '#fee2e2';
-              const text = s.ledColor === 'verde' ? '#166534' : s.ledColor === 'amarillo' ? '#854d0e' : '#991b1b';
-              const border = s.ledColor === 'verde' ? '#bbf7d0' : s.ledColor === 'amarillo' ? '#fde047' : '#fecaca';
-              const dot = s.ledColor === 'verde' ? '#22c55e' : s.ledColor === 'amarillo' ? '#eab308' : '#ef4444';
-              const statusText = s.ledColor === 'verde' ? '🟢 Libre' : s.ledColor === 'amarillo' ? '🟡 Reservado' : '🔴 Ocupado';
+              const isMisplaced = Boolean(s.isMisplaced);
+              const bg = isMisplaced ? '#ffedd5' : s.ledColor === 'verde' ? '#dcfce7' : s.ledColor === 'amarillo' ? '#fef9c3' : '#fee2e2';
+              const text = isMisplaced ? '#c2410c' : s.ledColor === 'verde' ? '#166534' : s.ledColor === 'amarillo' ? '#854d0e' : '#991b1b';
+              const border = isMisplaced ? '#fdba74' : s.ledColor === 'verde' ? '#bbf7d0' : s.ledColor === 'amarillo' ? '#fde047' : '#fecaca';
+              const dot = isMisplaced ? '#f97316' : s.ledColor === 'verde' ? '#22c55e' : s.ledColor === 'amarillo' ? '#eab308' : '#ef4444';
+              const statusText = isMisplaced ? '⚠️ Auto en mala posición' : s.ledColor === 'verde' ? '🟢 Libre' : s.ledColor === 'amarillo' ? '🟡 Reservado' : '🔴 Ocupado';
 
               return (
                 <div

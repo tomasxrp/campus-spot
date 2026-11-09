@@ -7,7 +7,9 @@ import {
   Zap,
   AlertCircle,
   ShieldCheck,
-  Timer
+  Timer,
+  AlertTriangle,
+  RotateCcw
 } from 'lucide-react';
 import type { ParkingSensorSlot, ParkingSpot } from '../../types';
 import { useParking } from '../../context/ParkingContext';
@@ -35,7 +37,9 @@ export const CtaReservationView: React.FC<CtaReservationViewProps> = ({ spot, on
   const [selectedDuration, setSelectedDuration] = useState<string>(DURATION_OPTIONS[1].label);
   const [arrivalTime, setArrivalTime] = useState<string>('13:30');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [cancellingSensorId, setCancellingSensorId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // Reloj local para cuenta regresiva en tiempo real del temporizador de 20 min
   const [now, setNow] = useState<number>(() => Date.now());
@@ -60,6 +64,25 @@ export const CtaReservationView: React.FC<CtaReservationViewProps> = ({ spot, on
 
   const selectedSensor = sensors.find((s) => s.sensorId === selectedSensorId);
   const isSelectedSlotFree = selectedSensor?.ledColor === 'verde' && !selectedSensor.isOccupied;
+
+  // Manejar cancelación directa de una reserva (libera la plaza en Firebase)
+  const handleCancelSlotReservation = async (e: React.MouseEvent, sensor: ParkingSensorSlot) => {
+    e.stopPropagation();
+    if (cancellingSensorId) return;
+
+    setCancellingSensorId(sensor.sensorId);
+    setErrorMsg(null);
+    try {
+      await releaseFirebaseCtaSlot(sensor.sensorId, 'Cancelado por usuario desde la app');
+      setSuccessMsg(`Reserva de ${sensor.name} (${sensor.sensorId}) cancelada y liberada con éxito.`);
+      setTimeout(() => setSuccessMsg(null), 3500);
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Error al liberar la plaza en Firebase');
+      setTimeout(() => setErrorMsg(null), 3500);
+    } finally {
+      setCancellingSensorId(null);
+    }
+  };
 
   // Manejar selección de plaza
   const handleSelectSlot = (sensor: ParkingSensorSlot) => {
@@ -245,20 +268,28 @@ export const CtaReservationView: React.FC<CtaReservationViewProps> = ({ spot, on
             {sensors.map((sensor) => {
               const isSelected = selectedSensorId === sensor.sensorId;
               const isFree = sensor.ledColor === 'verde' && !sensor.isOccupied;
-              const isReserved = sensor.ledColor === 'amarillo';
-              const isOccupied = sensor.isOccupied && sensor.ledColor === 'rojo';
+              const isMisplaced = Boolean(sensor.isMisplaced);
+              const isReserved = (sensor.isReserved || sensor.ledColor === 'amarillo') && !isMisplaced;
+              const isOccupied = (sensor.isOccupied && sensor.ledColor === 'rojo') || isMisplaced;
 
               // Colores según requerimiento exacto:
               // ROJO = OCUPADO
               // AMARILLO = RESERVADO
               // VERDE = DISPONIBLE
+              // NARANJA/ROJO ALERTA = AUTO EN MALA POSICIÓN
               let borderColor = '#22c55e';
               let bgColor = '#052316';
               let bulbColor = '#22c55e';
               let statusLabel = 'DISPONIBLE';
               let statusColor = '#4ade80';
 
-              if (isOccupied) {
+              if (isMisplaced) {
+                borderColor = '#f97316';
+                bgColor = '#2a1205';
+                bulbColor = '#f97316';
+                statusLabel = 'MALA POSICIÓN';
+                statusColor = '#fb923c';
+              } else if (isOccupied) {
                 borderColor = '#ef4444';
                 bgColor = '#260b0b';
                 bulbColor = '#ef4444';
@@ -369,9 +400,72 @@ export const CtaReservationView: React.FC<CtaReservationViewProps> = ({ spot, on
                     padding: '4px 2px',
                     textAlign: 'center',
                   }}>
-                    {/* CASO ROJO: OCUPADO */}
-                    {isOccupied && (
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
+                    {/* CASO: AUTO EN MALA POSICIÓN (RESERVADO PERO PATENTE NO COINCIDE) */}
+                    {isMisplaced && (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', width: '100%' }}>
+                        <div style={{
+                          width: '32px',
+                          height: '38px',
+                          backgroundColor: '#451a03',
+                          border: '1.5px solid #f97316',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}>
+                          <AlertTriangle size={18} color="#fdba74" />
+                        </div>
+                        <span style={{ fontSize: '8px', color: '#fb923c', fontWeight: '800', lineHeight: 1.1 }}>
+                          AUTO EN MALA POSICIÓN
+                        </span>
+                        {sensor.patenteDetectada && (
+                          <span style={{
+                            fontSize: '7.5px',
+                            backgroundColor: '#000000',
+                            color: '#fb923c',
+                            padding: '1px 3px',
+                            borderRadius: '3px',
+                            fontFamily: 'monospace',
+                            fontWeight: '700',
+                          }}>
+                            Detectada: {sensor.patenteDetectada}
+                          </span>
+                        )}
+                        {sensor.patenteEsperada && (
+                          <span style={{ fontSize: '7px', color: '#fed7aa', fontFamily: 'monospace' }}>
+                            Reserva: {sensor.patenteEsperada}
+                          </span>
+                        )}
+                        {/* Botón pequeño para cancelar reserva y liberar plaza */}
+                        <button
+                          type="button"
+                          onClick={(e) => handleCancelSlotReservation(e, sensor)}
+                          disabled={cancellingSensorId === sensor.sensorId}
+                          title="Cancelar reserva y liberar plaza en Firebase"
+                          style={{
+                            marginTop: '2px',
+                            padding: '2px 5px',
+                            fontSize: '8px',
+                            fontWeight: '700',
+                            backgroundColor: '#9a3412',
+                            color: '#ffffff',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '2px',
+                          }}
+                        >
+                          <RotateCcw size={8} />
+                          <span>{cancellingSensorId === sensor.sensorId ? '...' : 'Liberar'}</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* CASO ROJO: OCUPADO REGULAR (O PATENTE VALIDADA) */}
+                    {!isMisplaced && isOccupied && (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', width: '100%' }}>
                         <div style={{
                           width: '32px',
                           height: '42px',
@@ -385,7 +479,7 @@ export const CtaReservationView: React.FC<CtaReservationViewProps> = ({ spot, on
                           <Car size={20} color="#fca5a5" />
                         </div>
                         <span style={{ fontSize: '9px', color: '#fca5a5', fontWeight: '800' }}>
-                          AUTO
+                          OCUPADO
                         </span>
                         {sensor.distanciaMm && (
                           <span style={{ fontSize: '8.5px', color: '#cbd5e1', fontFamily: 'monospace' }}>
@@ -404,6 +498,32 @@ export const CtaReservationView: React.FC<CtaReservationViewProps> = ({ spot, on
                           }}>
                             {sensor.patenteDetectada}
                           </span>
+                        )}
+                        {/* Si estaba reservado, permitir también liberar */}
+                        {(sensor.isReserved || sensor.patenteEsperada) && (
+                          <button
+                            type="button"
+                            onClick={(e) => handleCancelSlotReservation(e, sensor)}
+                            disabled={cancellingSensorId === sensor.sensorId}
+                            title="Liberar plaza en Firebase"
+                            style={{
+                              marginTop: '2px',
+                              padding: '2px 5px',
+                              fontSize: '8px',
+                              fontWeight: '700',
+                              backgroundColor: '#7f1d1d',
+                              color: '#ffffff',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '2px',
+                            }}
+                          >
+                            <RotateCcw size={8} />
+                            <span>{cancellingSensorId === sensor.sensorId ? '...' : 'Liberar'}</span>
+                          </button>
                         )}
                       </div>
                     )}
@@ -469,9 +589,30 @@ export const CtaReservationView: React.FC<CtaReservationViewProps> = ({ spot, on
                           </span>
                         </div>
 
-                        <span style={{ fontSize: '8px', color: '#fef08a', opacity: 0.85 }}>
-                          Auto-liberación
-                        </span>
+                        {/* Botón pequeño de cancelar reserva */}
+                        <button
+                          type="button"
+                          onClick={(e) => handleCancelSlotReservation(e, sensor)}
+                          disabled={cancellingSensorId === sensor.sensorId}
+                          title="Cancelar reserva y liberar plaza en Firebase"
+                          style={{
+                            padding: '3px 6px',
+                            fontSize: '8.5px',
+                            fontWeight: '700',
+                            backgroundColor: '#78350f',
+                            color: '#fef08a',
+                            border: '1px solid #d97706',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          <RotateCcw size={9} />
+                          <span>{cancellingSensorId === sensor.sensorId ? 'Liberando...' : 'Cancelar reserva'}</span>
+                        </button>
                       </div>
                     )}
 
@@ -537,6 +678,24 @@ export const CtaReservationView: React.FC<CtaReservationViewProps> = ({ spot, on
           </div>
         </div>
 
+        {/* Notificación de éxito si se canceló / liberó una reserva */}
+        {successMsg && (
+          <div style={{
+            backgroundColor: '#f0fdf4',
+            border: '1px solid #bbf7d0',
+            color: '#15803d',
+            borderRadius: '10px',
+            padding: '8px 12px',
+            fontSize: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}>
+            <Check size={15} style={{ flexShrink: 0 }} />
+            <span>{successMsg}</span>
+          </div>
+        )}
+
         {/* Notificación de error si se hace clic en plaza ocupada/reservada */}
         {errorMsg && (
           <div style={{
@@ -598,6 +757,7 @@ export const CtaReservationView: React.FC<CtaReservationViewProps> = ({ spot, on
             <input
               id="cta-plate-input"
               type="text"
+              value={vehiclePlate}
               onChange={handlePlateChange}
               placeholder="ABCD12"
               maxLength={8}
@@ -616,6 +776,32 @@ export const CtaReservationView: React.FC<CtaReservationViewProps> = ({ spot, on
                 textTransform: 'uppercase',
               }}
             />
+          </div>
+
+          {/* Presets rápidos */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', paddingBottom: '2px' }}>
+            <span style={{ fontSize: '10.5px', color: '#64748b', fontWeight: '600', whiteSpace: 'nowrap' }}>
+              Presets:
+            </span>
+            {VEHICLE_PRESETS.map((p) => (
+              <button
+                key={p.plate}
+                type="button"
+                onClick={() => handleSelectPreset(p)}
+                style={{
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontWeight: vehiclePlate === p.plate ? '800' : '600',
+                  backgroundColor: vehiclePlate === p.plate ? '#0f172a' : '#ffffff',
+                  color: vehiclePlate === p.plate ? '#ffffff' : '#334155',
+                  border: '1px solid #cbd5e1',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {p.plate} ({p.model})
+              </button>
+            ))}
           </div>
         </div>
 

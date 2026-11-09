@@ -494,8 +494,9 @@ export const DatabaseConsoleModal: React.FC = () => {
           >
             {ctaSpot?.sensors && ctaSpot.sensors.length > 0 ? (
               ctaSpot.sensors.map((sensor) => {
-                const isReserved = sensor.ledColor === 'amarillo';
-                const isOccupied = sensor.isOccupied && sensor.ledColor === 'rojo';
+                const isMisplaced = Boolean(sensor.isMisplaced);
+                const isReserved = (sensor.isReserved || sensor.ledColor === 'amarillo') && !isMisplaced;
+                const isOccupied = (sensor.isOccupied && sensor.ledColor === 'rojo') || isMisplaced;
 
                 let bulbBg = '#052e16';
                 let bulbBorder = '#22c55e';
@@ -504,7 +505,14 @@ export const DatabaseConsoleModal: React.FC = () => {
                 let statusColor = '#4ade80';
                 let statusBg = 'rgba(34, 197, 94, 0.15)';
 
-                if (isReserved) {
+                if (isMisplaced) {
+                  bulbBg = '#451a03';
+                  bulbBorder = '#f97316';
+                  bulbColor = '#f97316';
+                  statusText = '⚠️ AUTO EN MALA POSICIÓN';
+                  statusColor = '#fb923c';
+                  statusBg = 'rgba(249, 115, 22, 0.15)';
+                } else if (isReserved) {
                   bulbBg = '#422006';
                   bulbBorder = '#eab308';
                   bulbColor = '#eab308';

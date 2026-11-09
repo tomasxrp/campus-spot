@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, onValue, get, set, type Database } from 'firebase/database';
 import type { ParkingSensorSlot } from '../types';
 
+
 const firebaseConfig = {
   apiKey: "AIzaSyBydJJjmXVf0dyWM2KYG2OjDOVZpkZnxO4",
   authDomain: "campusspot-a82da.firebaseapp.com",
@@ -176,6 +177,7 @@ export function parseFirebaseCtaSchema(rawData: any): FirebaseCtaData {
 
   const sensores = rawData.sensores || {};
   const leds = rawData.leds || {};
+  const reservas = rawData.reservas || {};
   const entries = Object.entries(sensores);
 
   const totalSpots = entries.length;
@@ -183,36 +185,91 @@ export function parseFirebaseCtaSchema(rawData: any): FirebaseCtaData {
 
   const sensors: ParkingSensorSlot[] = entries.map(([sensorKey, data]: [string, any], index) => {
     const slotNumber = index + 1;
-    const isYellow = Boolean(data.led_amarillo || leds[sensorKey]?.amarillo);
-    const isGreen = Boolean(data.led_verde);
-    const isRed = Boolean(data.led_rojo);
+    const reservaNode = reservas[sensorKey];
+    
+    // Se considera reservado si:
+    // 1. En reservas[sensorKey].activa es true o tiene patente reservada
+    // 2. data.led_amarillo === true o leds[sensorKey]?.amarillo === true
+    // 3. data.reservado === true o data.estado_final === 'reservado'
+    const isReserved = Boolean(
+      reservaNode?.activa ||
+      (reservaNode?.patente && reservaNode.patente.trim() !== '') ||
+      data.reservado ||
+      data.estado_final === 'reservado' ||
+      data.led_amarillo ||
+      leds[sensorKey]?.amarillo
+    );
 
-    let ledColor: 'verde' | 'rojo' | 'amarillo' = 'rojo';
-    let isOccupied = true;
+    // Patente esperada / de la reserva (desde nodo reservas o data del sensor)
+    const patenteEsperada = (
+      (reservaNode?.patente && reservaNode.patente.trim() !== '' ? reservaNode.patente : '') ||
+      data.patente_esperada ||
+      data.patente_reserva_analizada ||
+      ''
+    ).toUpperCase().trim();
 
-    if (isGreen) {
-      ledColor = 'verde';
-      isOccupied = false;
-      availableSpots += 1;
-    } else if (isYellow) {
-      ledColor = 'amarillo';
-      isOccupied = true;
-    } else if (isRed) {
-      ledColor = 'rojo';
-      isOccupied = true;
+    // Patente detectada por la cámara en la plaza
+    const patenteDetectada = (
+      data.patente_detectada ||
+      data.patente_aceptada ||
+      ''
+    ).toUpperCase().trim();
+
+    // Si está reservado y hay una patente detectada por la cámara,
+    // se comparan ambas patentes:
+    // - Si coinciden -> la plaza queda como 'ocupado' (rojo)
+    // - Si no coinciden -> queda como 'auto en mala posición'
+    let isMisplaced = false;
+    let isOccupied = false;
+    let ledColor: 'verde' | 'rojo' | 'amarillo' = 'verde';
+
+    if (isReserved) {
+      if (patenteDetectada !== '') {
+        if (patenteEsperada !== '' && patenteDetectada === patenteEsperada) {
+          // Coinciden las patentes: queda como ocupado correctamente
+          isOccupied = true;
+          ledColor = 'rojo';
+        } else {
+          // No coinciden: auto en mala posición
+          isOccupied = true;
+          isMisplaced = true;
+          ledColor = 'rojo';
+        }
+      } else if (data.objeto_detectado || data.led_rojo || data.estado_final === 'ocupado') {
+        // Objeto detectado en espacio reservado pero aún sin patente leída o en proceso
+        isOccupied = true;
+        ledColor = 'amarillo';
+      } else {
+        // Reservado a la espera del vehículo
+        isOccupied = true;
+        ledColor = 'amarillo';
+      }
     } else {
-      isOccupied = data.estado_final !== 'libre';
-      ledColor = isOccupied ? 'rojo' : 'verde';
-      if (!isOccupied) availableSpots += 1;
+      // Espacio NO reservado: lógica estándar según sensor / LEDs
+      const isGreen = Boolean(data.led_verde || data.estado_final === 'libre');
+      const isRed = Boolean(data.led_rojo || data.objeto_detectado || data.estado_final === 'ocupado');
+
+      if (isGreen) {
+        ledColor = 'verde';
+        isOccupied = false;
+        availableSpots += 1;
+      } else if (isRed) {
+        ledColor = 'rojo';
+        isOccupied = true;
+      } else {
+        isOccupied = data.estado_final !== 'libre';
+        ledColor = isOccupied ? 'rojo' : 'verde';
+        if (!isOccupied) availableSpots += 1;
+      }
     }
 
     const now = Date.now();
     let reservaTimestamp: number | undefined = data.reserva_timestamp;
     let reservaExpira: number | undefined = data.reserva_expira;
 
-    // Si el LED amarillo está activo pero no tenía timestamp de expiración registrado,
+    // Si está reservado pero no tenía timestamp de expiración registrado,
     // fijamos el temporizador de 20 minutos
-    if (isYellow && !reservaExpira) {
+    if (isReserved && !reservaExpira) {
       reservaTimestamp = now;
       reservaExpira = now + 20 * 60 * 1000;
     }
@@ -227,13 +284,15 @@ export function parseFirebaseCtaSchema(rawData: any): FirebaseCtaData {
       distanciaValida: data.distancia_valida,
       objetoDetectado: data.objeto_detectado,
       ocupacionConfirmada: data.ocupacion_confirmada,
-      patenteEsperada: data.patente_esperada || undefined,
-      patenteDetectada: data.patente_detectada || undefined,
+      patenteEsperada: patenteEsperada || undefined,
+      patenteDetectada: patenteDetectada || undefined,
       camaraValidada: data.camara_validada,
       validacionVigente: data.validacion_vigente,
       timestamp: data.timestamp_sensor || data.timestamp_camara,
       reservaTimestamp,
       reservaExpira,
+      isReserved,
+      isMisplaced,
     };
   });
 
@@ -249,7 +308,7 @@ export function subscribeToFirebaseCta(callback: CtaCallback): () => void {
   try {
     addFirebaseLog('info', 'SUBSCRIBE', 'Iniciando escucha en vivo de la raíz "/" en Firebase...');
     const rootRef = ref(rtdb);
-    
+
     const unsubscribe = onValue(
       rootRef,
       (snapshot) => {
@@ -269,10 +328,10 @@ export function subscribeToFirebaseCta(callback: CtaCallback): () => void {
           );
 
           parsed.sensors.forEach((s) => {
-            const estadoTexto = s.ledColor === 'amarillo' 
-              ? '🟡 RESERVADO' 
-              : s.isOccupied 
-                ? '🔴 OCUPADO' 
+            const estadoTexto = s.ledColor === 'amarillo'
+              ? '🟡 RESERVADO'
+              : s.isOccupied
+                ? '🔴 OCUPADO'
                 : '🟢 LIBRE';
             const ledInfo = `LED ${s.ledColor.toUpperCase()}`;
             const distInfo = s.distanciaMm !== undefined ? `${s.distanciaMm.toFixed(1)} mm` : 'N/A';
@@ -311,7 +370,7 @@ export function subscribeToFirebaseCta(callback: CtaCallback): () => void {
   } catch (err: any) {
     emitStatus('error');
     addFirebaseLog('error', 'FATAL', `Fallo al iniciar suscripción a Firebase: ${err?.message}`);
-    return () => {};
+    return () => { };
   }
 }
 
@@ -367,7 +426,14 @@ export async function reserveFirebaseCtaSlot(sensorId: string, patente: string):
     const ledRef = ref(rtdb, `leds/${sensorId}/amarillo`);
     await set(ledRef, true);
 
-    // 2. sensores/[sensorId]/patente_esperada = cleanPatente
+    // 2. reservas/[sensorId] = { activa: true, patente: cleanPatente }
+    const reservaSensorRef = ref(rtdb, `reservas/${sensorId}`);
+    await set(reservaSensorRef, {
+      activa: true,
+      patente: cleanPatente,
+    });
+
+    // 3. sensores/[sensorId]/patente_esperada = cleanPatente
     const sensorPatenteRef = ref(rtdb, `sensores/${sensorId}/patente_esperada`);
     await set(sensorPatenteRef, cleanPatente);
 
@@ -402,6 +468,13 @@ export async function releaseFirebaseCtaSlot(sensorId: string, motivo = 'Liberac
 
     const ledRef = ref(rtdb, `leds/${sensorId}/amarillo`);
     await set(ledRef, false);
+
+    // 2. reservas/[sensorId] = { activa: false, patente: '' }
+    const reservaSensorRef = ref(rtdb, `reservas/${sensorId}`);
+    await set(reservaSensorRef, {
+      activa: false,
+      patente: '',
+    });
 
     const sensorPatenteRef = ref(rtdb, `sensores/${sensorId}/patente_esperada`);
     await set(sensorPatenteRef, null);
