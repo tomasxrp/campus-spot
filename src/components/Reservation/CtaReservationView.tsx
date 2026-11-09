@@ -55,7 +55,7 @@ export const CtaReservationView: React.FC<CtaReservationViewProps> = ({ spot, on
   useEffect(() => {
     sensors.forEach((s) => {
       if (s.ledColor === 'amarillo' && s.reservaExpira && now >= s.reservaExpira) {
-        if (!s.isOccupied && !s.objetoDetectado) {
+        if (!s.objetoDetectado && !s.reservaValidada) {
           releaseFirebaseCtaSlot(s.sensorId, 'Temporizador de 20 minutos agotado');
         }
       }
