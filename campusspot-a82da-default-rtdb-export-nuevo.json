@@ -1,0 +1,131 @@
+{
+  "leds": {
+    "sensor1": {
+      "amarillo": false
+    },
+    "sensor2": {
+      "amarillo": false
+    },
+    "sensor3": {
+      "amarillo": false
+    },
+    "sensor4": {
+      "amarillo": false
+    }
+  },
+  "reservas": {
+    "sensor1": {
+      "activa": false,
+      "patente": ""
+    },
+    "sensor2": {
+      "activa": false,
+      "patente": "ABCD12"
+    },
+    "sensor3": {
+      "activa": false,
+      "patente": ""
+    },
+    "sensor4": {
+      "activa": false,
+      "patente": ""
+    }
+  },
+  "sensores": {
+    "sensor1": {
+      "amarillo_parpadeando": false,
+      "camara_validada": false,
+      "distancia_mm": 598.19202,
+      "distancia_valida": true,
+      "estado_final": "libre",
+      "led_amarillo": false,
+      "led_rojo": false,
+      "led_verde": true,
+      "objeto_detectado": false,
+      "ocupacion_confirmada": false,
+      "patente_aceptada": "",
+      "patente_esperada": "ABCD12",
+      "patente_reserva_analizada": "",
+      "presencia_estable": false,
+      "reserva_expira": 1793967822981,
+      "reserva_timestamp": 1793966622981,
+      "reserva_validada": false,
+      "reservado": false,
+      "sesion_camara": "",
+      "sesion_ocupacion": "",
+      "timestamp_camara": 1793966730,
+      "timestamp_patente": 0,
+      "timestamp_sensor": 1793966738,
+      "validacion_vigente": false
+    },
+    "sensor2": {
+      "amarillo_parpadeando": false,
+      "camara_validada": false,
+      "distancia_mm": 616.71399,
+      "distancia_valida": true,
+      "estado_final": "libre",
+      "led_amarillo": false,
+      "led_rojo": false,
+      "led_verde": true,
+      "objeto_detectado": false,
+      "ocupacion_confirmada": false,
+      "patente_aceptada": "",
+      "patente_reserva_analizada": "ABCD12",
+      "presencia_estable": false,
+      "reserva_validada": false,
+      "reservado": false,
+      "sesion_camara": "",
+      "sesion_ocupacion": "",
+      "timestamp_camara": 1793966730,
+      "timestamp_patente": 0,
+      "timestamp_sensor": 1793966738,
+      "validacion_vigente": false
+    },
+    "sensor3": {
+      "amarillo_parpadeando": false,
+      "camara_validada": false,
+      "distancia_mm": 605.90948,
+      "distancia_valida": true,
+      "estado_final": "libre",
+      "led_amarillo": false,
+      "led_rojo": false,
+      "led_verde": true,
+      "objeto_detectado": false,
+      "ocupacion_confirmada": false,
+      "patente_aceptada": "",
+      "patente_reserva_analizada": "",
+      "presencia_estable": false,
+      "reserva_validada": false,
+      "reservado": false,
+      "sesion_camara": "",
+      "sesion_ocupacion": "",
+      "timestamp_camara": 1793966730,
+      "timestamp_patente": 0,
+      "timestamp_sensor": 1793966738,
+      "validacion_vigente": false
+    },
+    "sensor4": {
+      "amarillo_parpadeando": false,
+      "camara_validada": false,
+      "distancia_mm": 638.15149,
+      "distancia_valida": true,
+      "estado_final": "libre",
+      "led_amarillo": false,
+      "led_rojo": false,
+      "led_verde": true,
+      "objeto_detectado": false,
+      "ocupacion_confirmada": false,
+      "patente_aceptada": "",
+      "patente_reserva_analizada": "",
+      "presencia_estable": false,
+      "reserva_validada": false,
+      "reservado": false,
+      "sesion_camara": "",
+      "sesion_ocupacion": "",
+      "timestamp_camara": 1793966730,
+      "timestamp_patente": 0,
+      "timestamp_sensor": 1793966738,
+      "validacion_vigente": false
+    }
+  }
+}
