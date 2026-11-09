@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, onValue, get, set, update, type Database } from 'firebase/database'; import type { ParkingSensorSlot } from '../types';
+import { getDatabase, ref, onValue, get, set, update, type Database } from 'firebase/database';
+import type { ParkingSensorSlot } from '../types';
 
 
 const firebaseConfig = {
@@ -493,6 +494,16 @@ export async function releaseFirebaseCtaSlot(sensorId: string, motivo = 'Liberac
 // VERIFICADORES DE AUTO-LIBERACIÓN
 // 1. Temporizador de 20 minutos (si el auto no llega)
 // 2. Liberación tras salida (10 segundos después de que el auto correcto se va)
+// ==============================================================
+// ==============================================================
+// VERIFICADORES DE AUTO-LIBERACIÓN
+// 1. Salida del auto que SÍ tenía la reserva -> libera 10 s después
+// 2. Timeout de 20 min si el auto nunca llegó
+// ==============================================================
+// ==============================================================
+// VERIFICADORES DE AUTO-LIBERACIÓN
+// 1. Salida del auto que SÍ tenía la reserva -> libera 10 s después
+// 2. Timeout de 20 min si el auto nunca llegó
 // ==============================================================
 // ==============================================================
 // VERIFICADORES DE AUTO-LIBERACIÓN
