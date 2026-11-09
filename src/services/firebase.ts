@@ -291,6 +291,7 @@ export function parseFirebaseCtaSchema(rawData: any): FirebaseCtaData {
       timestamp: data.timestamp_sensor || data.timestamp_camara,
       reservaTimestamp,
       reservaExpira,
+      reservaValidada: Boolean(data.reserva_validada),
       isReserved,
       isMisplaced,
     };
@@ -485,6 +486,12 @@ export async function releaseFirebaseCtaSlot(sensorId: string, motivo = 'Liberac
     const expiraRef = ref(rtdb, `sensores/${sensorId}/reserva_expira`);
     await set(expiraRef, null);
 
+    const reservaValidadaRef = ref(rtdb, `sensores/${sensorId}/reserva_validada`);
+    await set(reservaValidadaRef, false);
+
+    const reservadoRef = ref(rtdb, `sensores/${sensorId}/reservado`);
+    await set(reservadoRef, false);
+
     addFirebaseLog(
       'success',
       'LIBERAR_CTA',
@@ -498,9 +505,15 @@ export async function releaseFirebaseCtaSlot(sensorId: string, motivo = 'Liberac
 }
 
 // ==============================================================
-// VERIFICADOR DE TEMPORIZADOR DE 20 MINUTOS (AUTO-LIBERACIÓN)
+// VERIFICADORES DE AUTO-LIBERACIÓN
+// 1. Temporizador de 20 minutos (si el auto no llega)
+// 2. Liberación tras salida (10 segundos después de que el auto correcto se va)
 // ==============================================================
 let autoReleaseInterval: number | null = null;
+
+// Mapa para rastrear el tiempo desde que el auto validado se fue:
+// sensorId -> timestamp en ms en que se detectó que objeto_detectado pasó a false
+const departureTimers = new Map<string, number>();
 
 export function startAutoReleaseMonitor() {
   if (autoReleaseInterval || typeof window === 'undefined') return;
@@ -510,7 +523,63 @@ export function startAutoReleaseMonitor() {
 
     const now = Date.now();
     lastParsedData.sensors.forEach((s) => {
-      // Si la plaza está en amarillo (reservada) y ya expiró el temporizador de 20 minutos
+      // ------------------------------------------------------------------
+      // REGLA 1: Liberación tras salida del vehículo que reservó (10 segundos)
+      // OJO: Solo debe pasar esto cuando el auto que llegó es el que debería
+      // (reservaValidada === true), y cuando este mismo se va (!objetoDetectado).
+      // Si hay un auto que no debería estar ahí, no se libera al irse.
+      // ------------------------------------------------------------------
+      if (s.reservaValidada) {
+        if (!s.objetoDetectado) {
+          // El auto que tenía reserva validada se acaba de ir o ya no está
+          if (!departureTimers.has(s.sensorId)) {
+            departureTimers.set(s.sensorId, now);
+            addFirebaseLog(
+              'info',
+              'SALIDA_AUTO',
+              `Vehículo con reserva validada salió de ${s.sensorId}. Iniciando conteo de 10 segundos para liberación...`
+            );
+          } else {
+            const departedAt = departureTimers.get(s.sensorId)!;
+            const elapsedSec = Math.floor((now - departedAt) / 1000);
+
+            if (now - departedAt >= 10000) {
+              departureTimers.delete(s.sensorId);
+              addFirebaseLog(
+                'success',
+                'LIBERAR_10S',
+                `Han transcurrido 10 segundos desde la salida del vehículo reservado en ${s.sensorId}. Liberando espacio automáticamente...`
+              );
+              releaseFirebaseCtaSlot(s.sensorId, 'Auto-liberación tras 10s de salida de vehículo reservado');
+            } else {
+              addFirebaseLog(
+                'info',
+                'CONTEO_SALIDA',
+                `Esperando liberación de ${s.sensorId} tras salida: ${elapsedSec}/10s transcurridos.`
+              );
+            }
+          }
+        } else {
+          // El auto sigue presente en la plaza; si había contador de salida se cancela
+          if (departureTimers.has(s.sensorId)) {
+            departureTimers.delete(s.sensorId);
+            addFirebaseLog(
+              'info',
+              'SALIDA_CANCELADA',
+              `Vehículo volvió a detectarse en ${s.sensorId}. Cancelado contador de salida.`
+            );
+          }
+        }
+      } else {
+        // No tiene reserva validada; limpiar cualquier timer de salida previo
+        if (departureTimers.has(s.sensorId)) {
+          departureTimers.delete(s.sensorId);
+        }
+      }
+
+      // ------------------------------------------------------------------
+      // REGLA 2: Timeout de 20 minutos de espera si el vehículo nunca llegó
+      // ------------------------------------------------------------------
       if (s.ledColor === 'amarillo' && s.reservaExpira && now >= s.reservaExpira) {
         // Si el auto NO ha llegado (el sensor no detecta ocupación física)
         if (!s.isOccupied && !s.objetoDetectado) {
@@ -523,7 +592,7 @@ export function startAutoReleaseMonitor() {
         }
       }
     });
-  }, 4000);
+  }, 1000);
 }
 
 // Iniciar el monitor automáticamente

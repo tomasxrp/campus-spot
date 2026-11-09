@@ -17,6 +17,7 @@ export interface ParkingSensorSlot {
   timestamp?: number;
   reservaTimestamp?: number;
   reservaExpira?: number;
+  reservaValidada?: boolean;
   isReserved?: boolean;
   isMisplaced?: boolean;
 }
